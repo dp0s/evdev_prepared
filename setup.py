@@ -65,7 +65,7 @@ def setup_process(name, **kwargs):
         ####must stay disabled to allow package_data option !!!
         python_requires=">=3.6", # metadata to display on PyPI
         author="DPS", author_email="dps@my.mail.de",
-        url="https://github.com/dp0s/Dpowers",
+        url="https://github.com/dp0s/evdev_prepared",
         classifiers=["Programming Language :: Python :: 3",
             "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"],
          )
