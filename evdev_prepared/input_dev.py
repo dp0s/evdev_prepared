@@ -1,6 +1,6 @@
 #
 #
-# Copyright (c) 2020 DPS, dps@my.mail.de
+# Copyright (c) 2021 DPS, dps@my.mail.de
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -141,15 +141,14 @@ class AdhancedInputDevice(InputDevice):
             self.write(ecodes.EV_KEY, keycode, 0)
         self.syn()
     
-    def close(self):
-        try:
-            super().close()
-        except RuntimeError:
-            try:
-                os.close(self.fd)
-            except OSError:
-                pass
-                
+    # def close(self):
+    #     try:
+    #         super().close()
+    #     except RuntimeError:
+    #         try:
+    #             os.close(self.fd)
+    #         except OSError:
+    #             pass
         #this is necessary because in evdev_version 1.3.0, close will
         # automatically use some of the async stuff, which we don't want!
 

@@ -1,6 +1,6 @@
 #
 #
-# Copyright (c) 2020 DPS, dps@my.mail.de
+# Copyright (c) 2021 DPS, dps@my.mail.de
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,14 +35,13 @@ except FileNotFoundError as e:
 
 
 
-module_folder = os.path.join(dirname,"Dlib")
-sys.path.insert(0, module_folder)
+sys.path.insert(0, dirname)
 #this way we will import from this folder not from pip
 import evdev_prepared
 
 def my_setup(name, **kwargs):
     if "version" not in kwargs: raise ValueError
-    shutil.rmtree(f"Dlib/{name}.egg-info", ignore_errors=True)
+    shutil.rmtree(f"{name}.egg-info", ignore_errors=True)
     shutil.rmtree("build", ignore_errors=True)
     print()
     print()
@@ -59,8 +58,6 @@ def my_setup(name, **kwargs):
 def setup_process(name, **kwargs):
     setup(**kwargs,
         name=name,
-        packages=find_packages("Dlib", include=[f"{name}*"]),
-        package_dir={"": "Dlib"},
         include_package_data=False,
         ####must stay disabled to allow package_data option !!!
         python_requires=">=3.6", # metadata to display on PyPI

@@ -1,6 +1,6 @@
 #
 #
-# Copyright (c) 2020 DPS, dps@my.mail.de
+# Copyright (c) 2021 DPS, dps@my.mail.de
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #
-__version__ = "0.2c1"
+__version__ = "0.2.0"
 
 
 try:
