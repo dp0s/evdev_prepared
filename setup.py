@@ -73,7 +73,7 @@ def setup_process(name, **kwargs):
 
 my_setup("evdev_prepared",
     version = evdev_prepared.__version__,
-    install_requires=["evdev==1.2.0", "setuptools >= 45"],
+    install_requires=["setuptools >= 45","evdev>=1.4.0"],
     description="Useful classes to make usage of python evdev easier"
     )
 
