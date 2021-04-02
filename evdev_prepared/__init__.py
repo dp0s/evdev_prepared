@@ -16,10 +16,25 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 
-try:
-    import evdev
-except:
-    raise Exception("Please install evdev using (sudo) pip install evdev")
+from . import tests
+
+install_instructions = tests.install_instructions
+
+def permission_test(path = "/dev/input"):
+    try:
+        tests.check_uinput()
+        tests.check_evdev_input_devices(path)
+    except OSError as e:
+        raise OSError("There seems to be a permission error. Refer to "
+          "https://github.com/dp0s/evdev_prepared\n Usually the "\
+          "following lines fix the permission problems. \n\n"
+                      + install_instructions+ "\n\n Restart afterwards.") from e
+    else:
+        print("Permissions seem to be ok.")
+
+
+if __name__ == "__main__":
+    permission_test()

@@ -19,6 +19,9 @@
 from evdev import ecodes, InputDevice, uinput
 import selectors, threading, os
 
+from .tests import check_evdev_input_devices
+check_evdev_input_devices()
+
 class EvdevDeviceGrabError(Exception):
     pass
 

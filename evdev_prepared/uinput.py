@@ -19,6 +19,8 @@
 from evdev import uinput, ecodes, device
 from collections import defaultdict
 
+from .tests import check_uinput
+check_uinput()
 
 class UinputWrapper:
     """This class allows to use a single fixed uinput object even when
@@ -73,4 +75,4 @@ class UinputWrapper:
         
         
         
-global_uinput = UinputWrapper(name="py-evdev-uinput-Dhelpers")
+global_uinput = UinputWrapper(name="py-evdev_prepared-uinput")

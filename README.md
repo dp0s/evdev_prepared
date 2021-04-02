@@ -18,8 +18,27 @@ Features
 - Provide a global uinput object to handle sending events.
 
 
+Install
+-
 
+`sudo pip install evdev_prepared`
 
+After installation you can test for the necessary permissions:
+
+```
+import evdev_prepared
+evdev_prepared.permission_test()
+```
+
+Accessing /dev/input
+-
+Evdev needs access to the /dev/input folder and its contents to receive 
+events. In order to achieve this without root privilege, you can add the 
+current user the the system's permission group "input":
+
+`sudo usermod -a -G input $USER`
+
+Afterwards, log in again or restart the system.
 
 Writing to /dev/uinput
 -
@@ -33,10 +52,3 @@ echo 'KERNEL=="uinput", TAG+="uaccess"' | sudo tee -a '/etc/udev/rules.d/50-uinp
 Restart the system afterwards.
 
 
-Accessing /dev/input
--
-Evdev needs access to the /dev/input folder and its contents to receive 
-events. In order to achieve this without root privilege, you can add the 
-current user the the system's permission group "input":
-
-`sudo usermod -a -G input <user>`
