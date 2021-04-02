@@ -19,9 +19,11 @@
 import re
 
 def check_uinput():
-    from evdev.uinput import UInput
-    UInput()  # this will raise an error if /dev/uinput is not writable
-
+    import evdev.uinput as ui
+    try:
+        ui.UInput()  # this will raise an error if /dev/uinput is not writable
+    except ui.UInputError:
+        print("No access to ")
 
 # the following check is performed automatically if importing the
 # evdev_preperation.input_dev module.
