@@ -1,4 +1,5 @@
 This package provides classes that solve common tasks when using python evdev:
+
 https://github.com/gvalkov/python-evdev
 
 Features:
@@ -10,4 +11,5 @@ Features:
 
 
 evdev_prepared is mainly intended as a backend to the Dpowers project:
+
 https://github.com/dp0s/Dpowers
