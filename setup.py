@@ -33,7 +33,8 @@ try:
 except FileNotFoundError as e:
     warnings.warn(str(e))
 
-
+shutil.rmtree("build", ignore_errors=True)
+shutil.rmtree("dist", ignore_errors=True)
 
 sys.path.insert(0, dirname)
 #this way we will import from this folder not from pip
@@ -42,7 +43,6 @@ import evdev_prepared
 def my_setup(name, **kwargs):
     if "version" not in kwargs: raise ValueError
     shutil.rmtree(f"{name}.egg-info", ignore_errors=True)
-    shutil.rmtree("build", ignore_errors=True)
     print()
     print()
     print(f"------------------------  Package {name} ----------------------------")
@@ -58,6 +58,7 @@ def my_setup(name, **kwargs):
 def setup_process(name, **kwargs):
     setup(**kwargs,
         name=name,
+        packages=find_packages(),
         include_package_data=False,
         ####must stay disabled to allow package_data option !!!
         python_requires=">=3.6", # metadata to display on PyPI
