@@ -177,7 +177,7 @@ class DeviceSelector:
 
 
 
-class DeviceStarter(DeviceSelector, ABC):
+class DeviceHandler(DeviceSelector, ABC):
     
     def __init__(self, devupdater=None, **selection_kwargs):
         DeviceSelector.__init__(self, **selection_kwargs, devupdater=devupdater)
@@ -219,7 +219,6 @@ class DeviceStarter(DeviceSelector, ABC):
         pass
 
 
-
 class CapturerMixin:
     
     def start_dev(self, dev):
@@ -237,3 +236,7 @@ class CollectorMixin:
     
     def stop_dev(self, dev):
         dev.uncollect(collector=self)
+        
+    @abstractmethod
+    def process_event(self,ty,co,val,dev):
+        raise NotImplementedError
