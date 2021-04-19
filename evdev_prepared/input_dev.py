@@ -200,6 +200,7 @@ class CollectableInputDevice(AdhancedInputDevice):
             handler.process_event(ty,co,val, self)
 
 
+
 import traceback
 
 class EvdevInputLooper:
@@ -212,10 +213,14 @@ class EvdevInputLooper:
         self.collected_devs = []
         self.selector = None
         self.loop_thread = None
-        self.DeviceClass = type(f"CollectableInputDevice_for_looper_"
-            f"{self.running_number}", (CollectableInputDevice,),{})
+        if self.running_number == 0:
+            dev_class = CollectableInputDevice
+        else:
+            dev_class = type(CollectableInputDevice.__name__+
+                 str(self.running_number), (CollectableInputDevice,),{})
         # create a dedicated subclass
-        self.DeviceClass._inputevent_looper = self
+        dev_class._inputevent_looper = self
+        self.DeviceClass = dev_class
     
     def start(self, dev):
         #print(dev, self.collected_devs)
@@ -274,12 +279,8 @@ class EvdevInputLooper:
         old = super().__repr__()[:-1]
         return old + f" with running number {self.running_number}>"
 
-    # def process_event(self, event, dev):  #     #
-    # self.hook_class.queue_event(categorize(event), dev)  #     ty, co,
-    # val = event.type, event.code, event.value  #     if ty == EV_KEY:  #
-    # dev.queue_keybutton(co,val)  #     elif ty == EV_ABS:  #
-    # dev.queue_cursor(co,val)  #     elif ty not in (EV_SYN, EV_MSC,
-    # EV_LED):  #         raise TypeError("Wrong event type: ", event,
-    # ty)  #     #print(ty,co,val)  #     #dev.queue_key()
+   
+
+DefaultInputLooper = EvdevInputLooper()
 
 

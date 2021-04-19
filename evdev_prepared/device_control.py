@@ -19,7 +19,7 @@
 import collections
 import time, threading
 from evdev import list_devices
-from .input_dev import AdhancedInputDevice, EvdevInputLooper
+from .input_dev import AdhancedInputDevice, EvdevInputLooper, DefaultInputLooper
 from evdev.ecodes import (EV_KEY, EV_ABS, EV_SYN, EV_MSC, KEY, BTN,
     EV_LED)
 from abc import ABC, abstractmethod
@@ -30,10 +30,15 @@ class DeviceUpdater:
     InputDevice_cls = AdhancedInputDevice
     
     def __init__(self, autoupdating=True, update_interval=5,
-            print_dev_change=True, activate_looper=False):
-        if activate_looper:
-            self.input_looper = EvdevInputLooper()
+            print_dev_change=True, allow_collecting=True,
+            use_distinct_looper=False):
+        if allow_collecting:
+            if use_distinct_looper:
+                self.input_looper = EvdevInputLooper()
+            else:
+                self.input_looper = DefaultInputLooper
             self.InputDevice_cls = self.input_looper.DeviceClass
+            assert issubclass(self.InputDevice_cls, self.__class__.InputDevice_cls)
         self.all_devs = []
         self._autoupdating = False
         self.update_interval = update_interval
