@@ -16,6 +16,7 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 #
+import collections
 import time, threading
 from evdev import list_devices
 from .input_dev import AdhancedInputDevice, EvdevInputLooper
@@ -120,16 +121,33 @@ class DeviceSelector:
     
     _used_updaters = []
     
-    def __init__(self, devupdater=None, category=None, name=None, path=None,
-            exclude_uinput = True, selection_func=None):
-        self.category = category
-        self.name = name
-        self.path = path
-        self.exclude_uinput = exclude_uinput
+    allowed_attributes = {"category": "exact", "name": "substring", "path":
+        "substring"}
+    
+    def __init__(self, devupdater=None, exclude_uinput = True,
+            selection_func=None, **selection_kwargs):
+        if selection_func and selection_kwargs: raise ValueError
+        if not selection_func and not selection_kwargs: raise ValueError
         self.selection_func = selection_func
-        param = (category or name or path)
-        if selection_func and param: raise ValueError
-        if not selection_func and not param: raise ValueError
+        self.included = dict()
+        self.excluded = dict()
+        for key, val in selection_kwargs.items():
+            excl = True
+            if key.startswith("exclude_"): key = key[8:]
+            elif key.startswith("excl_"): key = key[5:]
+            else:
+                excl = False
+            assert key in self.allowed_attributes
+            if not isinstance(val,(list,tuple)): val = [val]
+            if excl:
+                self.excluded[key] = val
+            else:
+                self.included[key] = val
+        if exclude_uinput:
+            if "uinput" not in self.included.get("category", ()):
+                l = list(self.excluded.get("category",[]))
+                if "uinput" not in l: l.append("uinput")
+                self.excluded["category"] = l
         if devupdater is None:
             if self._used_updaters:
                 for old_updater in self._used_updaters:
@@ -142,30 +160,31 @@ class DeviceSelector:
         devupdater.change_actions.append(self.dev_change_action)
     
     def properties(self):
-        return self.category, self.name, self.path, self.selection_func
+        return self.included, self.excluded, self.selection_func
     
     def __eq__(self, other):
         if isinstance(other, self.__class__):
             return self.properties() == other.properties()
-        elif isinstance(other, (tuple, list)) and len(other) == 4:
-            return self.properties() == other
         return NotImplemented
     
     def dev_is_selected(self, dev):
-        if dev.category == "uinput":
-            if self.category == "uinput": return True
-            if  self.exclude_uinput: return False
         if self.selection_func is not None:
-            return self.selection_func(dev.category, dev.name, dev.path)
-        cat = self.category
-        if cat is not None:
-            if isinstance(cat,str): cat = (cat,)
-            if dev.category not in cat: return False
-        if self.name is not None and self.name not in dev.name:
-            return False
-        if self.path is not None and self.path not in dev.path:
-            return False
-        return True
+            return self.selection_func(dev)
+        if self._compare_vals(dev, self.excluded): return False
+        if not self.included: return True
+        if self._compare_vals(dev, self.included): return True
+        return False
+    
+    def _compare_vals(self, dev, dic):
+        for key, values in dic.items():
+            matching_behavior = self.allowed_attributes[key]
+            dev_attribute_val = getattr(dev, key)
+            for val in values:
+                if matching_behavior == "exact":
+                    if val == dev_attribute_val: return True
+                elif matching_behavior == "substring":
+                    if val in dev_attribute_val: return True
+    
     
     def matching_devs(self):
         return list(dev for dev in self.devupdater.all_devs if
@@ -180,7 +199,7 @@ class DeviceSelector:
 class DeviceHandler(DeviceSelector, ABC):
     
     def __init__(self, devupdater=None, **selection_kwargs):
-        DeviceSelector.__init__(self, **selection_kwargs, devupdater=devupdater)
+        DeviceSelector.__init__(self, devupdater=devupdater, **selection_kwargs)
         self.matched_devs = []
         self.devupdater.change_actions.append(self._start_on_change)
         self._starter_active = False
