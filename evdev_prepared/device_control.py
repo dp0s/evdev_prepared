@@ -22,7 +22,6 @@ from evdev import list_devices
 from .input_dev import AdhancedInputDevice, EvdevInputLooper, DefaultInputLooper
 from evdev.ecodes import (EV_KEY, EV_ABS, EV_SYN, EV_MSC, KEY, BTN,
     EV_LED)
-from abc import ABC, abstractmethod
 
 
 class DeviceUpdater:
@@ -200,67 +199,74 @@ class DeviceSelector:
 
 
 
-
-class DeviceHandler(DeviceSelector, ABC):
+class DeviceHandler(DeviceSelector):
+    
     
     def __init__(self, devupdater=None, **selection_kwargs):
         DeviceSelector.__init__(self, devupdater=devupdater, **selection_kwargs)
-        self.matched_devs = []
-        self.devupdater.change_actions.append(self._start_on_change)
-        self._starter_active = False
+        self.devupdater.change_actions.append(self._check_on_change)
+        self.collect_active = False
+        self.collected_devs = []
+        self.grab_active = False
+        self.grabbed_devs = []
     
-    def _start_on_change(self, found_new, lost_devs):
+    def _check_on_change(self, found_new, lost_devs):
         # this way, the EvdevHandler will automatically register newly
         # appearing devs and release disappearing devs
-        if not self._starter_active: return
         for dev in lost_devs:
-            if dev in self.matched_devs:
-                self.stop_dev(dev)
-                self.matched_devs.remove(dev)
+            if self.collect_active and dev in self.collected_devs:
+                self.uncollect_dev(dev)
+                self.collected_devs.remove(dev)
+            if self.grab_active and dev in self.grabbed_devs:
+                self.ungrab_dev(dev)
+                self.grabbed_devs.remove(dev)
         for dev in found_new:
             if self.dev_is_selected(dev):
-                self.start_dev(dev)
-                self.matched_devs.append(dev)
+                if self.collect_active:
+                    if dev in self.collected_devs: raise ValueError
+                    self.collect_dev(dev)
+                    self.collected_devs.append(dev)
+                if self.grab_active:
+                    if dev in self.grabbed_devs: raise ValueError
+                    self.grab_dev(dev)
+                    self.grabbed_devs.append(dev)
     
-    def run(self):
-        self._starter_active = True
-        self.matched_devs = self.matching_devs()
-        # print(self.matched_devs)
-        for dev in self.matched_devs: self.start_dev(dev)
+    def start_collecting(self):
+        self.collect_active = True
+        self.collected_devs = self.matching_devs()
+        for dev in self.collected_devs: self.collect_dev(dev)
+        
+    def start_grabbing(self):
+        self.grab_active = True
+        self.grabbed_devs = self.matching_devs()
+        for dev in self.grabbed_devs: self.grab_dev(dev)
     
-    
-    def terminate(self):
-        self._starter_active = False
-        for dev in self.matched_devs: self.stop_dev(dev)
-        self.matched_devs = []
-    
-    @abstractmethod
-    def start_dev(self, dev):
-        pass
-    
-    @abstractmethod
-    def stop_dev(self, dev):
-        pass
+    def stop_collecting(self):
+        self.collect_active = False
+        for dev in self.collected_devs: self.uncollect_dev(dev)
+        self.collected_devs = []
+        
+    def stop_grabbing(self):
+        self.grab_active = False
+        for dev in self.grabbed_devs: self.ungrab_dev(dev)
+        self.grabbed_devs = []
 
+    def collect_dev(self, dev):
+        dev.collect(collector=self)
 
-class CapturerMixin:
+    def uncollect_dev(self, dev):
+        dev.uncollect(collector=self)
     
-    def start_dev(self, dev):
+    def grab_dev(self, dev):
         dev.grab(grabber=self)
     
-    def stop_dev(self, dev):
+    def ungrab_dev(self, dev):
         dev.ungrab(grabber=self)
 
-
-
-class CollectorMixin:
-    
-    def start_dev(self, dev):
-        dev.collect(collector=self)
-    
-    def stop_dev(self, dev):
-        dev.uncollect(collector=self)
-        
-    @abstractmethod
-    def process_event(self,ty,co,val,dev):
+    def process_event(self, ty, co, val, dev):
         raise NotImplementedError
+
+    
+    #compatibility with Dpowers naming convention:
+    start_capturing = start_grabbing
+    stop_capturing = stop_grabbing
