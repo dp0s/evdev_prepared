@@ -75,12 +75,12 @@ class AdhancedInputDevice(InputDevice):
                 return "headset"
             if ecodes.KEY_POWER in keylist: return "power_button"
             if ecodes.KEY_BRIGHTNESSDOWN in keylist: return "brightness_keys"
-            
         else:
             switchlist=devcaps.get(ecodes.EV_SW)
-            if ecodes.SW_LID in switchlist: return "lid_switch"
-            if ecodes.SW_HEADPHONE_INSERT in switchlist: return \
-                "headphone_switch"
+            if switchlist is not None:
+                if ecodes.SW_LID in switchlist: return "lid_switch"
+                if ecodes.SW_HEADPHONE_INSERT in switchlist:
+                    return "headphone_switch"
         return NotImplemented
     
     def grab(self, release_keys=True, grabber=None):
